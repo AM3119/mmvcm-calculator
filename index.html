@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MM-VCM Viability Correction Calculator</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --accent:#22c55e; --accent2:#38bdf8; --danger:#ef4444; --card:#0b1220;
+  }
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    color:#e5e7eb; background:linear-gradient(180deg,#0b1020, #0a1328 40%, #0b1020);
+  }
+  .wrap{max-width:1100px;margin:32px auto;padding:0 16px;}
+  header{margin-bottom:18px;}
+  h1{font-size:28px;margin:0 0 6px 0;}
+  .subtitle{color:var(--muted);font-size:14px}
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
+  .card{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(148,163,184,0.2);
+    border-radius:12px; padding:18px; backdrop-filter: blur(6px);
+  }
+  .card h2{font-size:18px;margin:0 0 10px 0;}
+  .row{display:flex; gap:12px; align-items:center; margin:10px 0;}
+  label{min-width:190px; font-size:14px;}
+  input[type=number], select{
+    width:100%; padding:10px 12px; color:#e5e7eb; background:#0a1020; border-radius:10px;
+    border:1px solid rgba(148,163,184,0.25); outline:none;
+  }
+  input[type=number]:focus, select:focus{border-color:var(--accent2); box-shadow:0 0 0 3px rgba(56,189,248,0.15)}
+  .btn{
+    padding:10px 14px; border-radius:10px; border:1px solid rgba(148,163,184,0.25);
+    cursor:pointer; color:#0a1020; background:linear-gradient(180deg,#34d399,#10b981);
+  }
+  .btn.secondary{background:linear-gradient(180deg,#60a5fa,#38bdf8); color:#0b1020}
+  .btn.ghost{background:transparent;color:#e5e7eb}
+  .note{font-size:13px;color:var(--muted); line-height:1.45}
+  .output{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px
+  }
+  .pill{
+    background:#0a1220;border:1px solid rgba(148,163,184,0.2);padding:14px;border-radius:12px
+  }
+  .pill .k{display:block;color:var(--muted);font-size:12px}
+  .pill .v{font-size:18px;margin-top:6px}
+  .formula{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    background:#0a1220;border:1px dashed rgba(56,189,248,0.35); padding:14px; border-radius:12px; overflow:auto
+  }
+  details{margin-top:10px}
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  th,td{padding:10px;border-bottom:1px solid rgba(148,163,184,0.15); text-align:left}
+  th{color:#93c5fd}
+  .warn{color:#fde68a}
+  .danger{color:var(--danger)}
+  .ok{color:var(--accent)}
+  footer{margin-top:24px;color:var(--muted);font-size:12px}
+</style>
+<!-- MathJax for equation rendering -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Al Mahrizi–Mossolem Viability Correction Model (MM‑VCM) Calculator</h1>
+    <div class="subtitle">Estimate the initial microbial load N₀ from a delayed observation N<sub>t</sub>, accounting for temperature, lag, decay, and carrying capacity.</div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>1) Select organism and matrix</h2>
+      <div class="row">
+        <label for="profile">Organism · Matrix</label>
+        <select id="profile" onchange="applyPreset()">
+          <option value="ecoli_urine">E. coli · Urine</option>
+          <option value="ecoli_blood">E. coli · Blood</option>
+          <option value="efaecalis_urine">E. faecalis · Urine</option>
+          <option value="kpneumoniae_urine">K. pneumoniae · Urine</option>
+          <option value="nmeningitidis_csf">N. meningitidis · CSF</option>
+          <option value="paeruginosa_blood">P. aeruginosa · Blood</option>
+          <option value="saureus_blood">S. aureus · Blood</option>
+          <option value="spneumoniae_csf">S. pneumoniae · CSF</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Use defaults or override</label>
+        <button class="btn secondary" onclick="applyPreset()">Apply defaults</button>
+        <button class="btn ghost" onclick="resetAll()">Reset form</button>
+      </div>
+
+      <h2 style="margin-top:16px">2) Enter measurement</h2>
+      <div class="row">
+        <label for="Nt">Observed count N<sub>t</sub> (CFU/mL)</label>
+        <input type="number" id="Nt" min="0" step="1" value="100000000">
+      </div>
+      <div class="row">
+        <label for="delay">Delay t (hours)</label>
+        <input type="number" id="delay" min="0" step="0.1" value="6">
+      </div>
+
+      <h2 style="margin-top:16px">3) Environment and model parameters</h2>
+      <div class="row">
+        <label for="temp">Temperature T (°C)</label>
+        <input type="number" id="temp" step="0.1" value="25">
+      </div>
+      <div class="row">
+        <label for="lag">Lag phase λ (hours)</label>
+        <input type="number" id="lag" min="0" step="0.05" value="0.4">
+      </div>
+      <div class="row">
+        <label for="k">Decay rate k (per hour)</label>
+        <input type="number" id="k" min="0" step="0.001" value="0.011">
+      </div>
+      <div class="row">
+        <label for="Kcap">Carrying capacity K (CFU/mL)</label>
+        <input type="number" id="Kcap" min="1" step="1000" value="900000000">
+      </div>
+      <div class="row">
+        <label for="gbase">Base doubling time G<sub>base</sub> at 37°C (hours)</label>
+        <input type="number" id="gbase" min="0.01" step="0.01" value="0.33">
+      </div>
+      <div class="row">
+        <label for="sigma">Temperature sensitivity σ (°C)</label>
+        <input type="number" id="sigma" min="0.1" step="0.1" value="5">
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn" onclick="computeN0()">Compute N₀</button>
+        <button class="btn ghost" onclick="copyResult()">Copy N₀</button>
+      </div>
+
+      <div class="output">
+        <div class="pill">
+          <span class="k">Estimated initial load N₀ (CFU/mL)</span>
+          <div class="v" id="N0out">—</div>
+        </div>
+        <div class="pill">
+          <span class="k">Effective growth time dt (h)</span>
+          <div class="v" id="dtout">—</div>
+        </div>
+        <div class="pill">
+          <span class="k">Growth rate r(T) (h⁻¹)</span>
+          <div class="v" id="rout">—</div>
+        </div>
+      </div>
+
+      <p class="note" style="margin-top:8px">
+        Caution: for long delays (≥ 12 h) or uncertain temperatures, interpret N₀ as an interval estimate in practice; uncertainty is driven predominantly by temperature in sensitivity analyses.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>About the equation</h2>
+      <div class="formula">
+        MM‑VCM inverse equation (closed‑form back‑calculation):<br><br>
+        \[ N_0 = \frac{K \cdot N_t \cdot e^{k \cdot dt}}{N_t \cdot e^{k \cdot dt} + (K - N_t \cdot e^{k \cdot dt}) \cdot e^{r(T) \cdot dt}} \]<br><br>
+        with \[ dt = \max(0, t - \lambda) \], \[ r(T) = \frac{\ln(2)}{G_{\text{base}}} \cdot \exp\left( -\frac{(T-37)^2}{2\sigma^2} \right) \].
+      </div>
+
+      <details open>
+        <summary><strong>Variable reference</strong></summary>
+        <table>
+          <tr><th>Symbol</th><th>Name</th><th>Meaning / Units</th></tr>
+          <tr><td>N<sub>t</sub></td><td>Observed load</td><td>Measured CFU/mL at delay time t</td></tr>
+          <tr><td>N₀</td><td>Initial load</td><td>Estimated CFU/mL at collection time</td></tr>
+          <tr><td>t</td><td>Delay</td><td>Hours between collection and measurement</td></tr>
+          <tr><td>λ</td><td>Lag phase</td><td>No-net-growth period before proliferation (hours)</td></tr>
+          <tr><td>dt</td><td>Effective time</td><td>dt = max(0, t − λ) (hours)</td></tr>
+          <tr><td>k</td><td>Decay rate</td><td>Per-hour loss due to death, storage</td></tr>
+          <tr><td>K</td><td>Carrying capacity</td><td>Matrix-specific max CFU/mL</td></tr>
+          <tr><td>T</td><td>Temperature</td><td>Storage/transport temperature (°C)</td></tr>
+          <tr><td>r(T)</td><td>Growth rate</td><td>Gaussian around 37°C (h⁻¹)</td></tr>
+        </table>
+      </details>
+
+      <details>
+        <summary><strong>Clinical notes &amp; safeguards</strong></summary>
+        <ul class="note">
+          <li>Set dt to zero when t ≤ λ; then N₀ = N<sub>t</sub>.</li>
+          <li>Defaults reflect organism–matrix literature ranges; manual override is supported for local validation.</li>
+          <li>No clamping applied—raw formula output shown (may be &lt;0 in edge cases).</li>
+        </ul>
+      </details>
+
+      <div class="card" style="margin-top:12px;background:#091126">
+        <h2 style="margin:0 0 6px 0">Quick guidance</h2>
+        <div class="note">
+          1) Choose the organism–matrix profile and apply defaults. 2) Enter N<sub>t</sub>, delay, and temperature. 3) Optionally override λ, k, K, G<sub>base</sub>, σ to match local data. 4) Click Compute to obtain N₀ and diagnostic terms dt and r(T). For extended delays or uncertain T, report intervals in clinical documentation.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    MM‑VCM is intended to assist with delay-corrected interpretation of CFU counts; use alongside clinical judgment and local laboratory validation.
+  </footer>
+</div>
+
+<script>
+// Format large numbers as scientific notation like 1.234x10^8
+function formatScientific(value){
+  if(value === 0) return '0';
+  if(value < 0) return '<0 (unphysical)';
+  const exponent = Math.floor(Math.log10(Math.abs(value)));
+  let mantissa = value / Math.pow(10, exponent);
+  return mantissa.toFixed(3) + 'x10^' + exponent;
+}
+
+/* ===== Preset library (sensible defaults per organism · matrix) =====
+   Values approximate the ranges used in your simulations.
+   Users can override any field at runtime.
+*/
+const PRESETS = {
+  'ecoli_urine'         : { T:25,  lambda:0.4, k:0.011, K:9e8,  Gbase:0.33, sigma:5 },
+  'ecoli_blood'         : { T:25,  lambda:0.4, k:0.011, K:9e8,  Gbase:0.33, sigma:5 },
+  'efaecalis_urine'     : { T:25,  lambda:0.5, k:0.011, K:9e8,  Gbase:0.35, sigma:5 },
+  'kpneumoniae_urine'   : { T:25,  lambda:0.5, k:0.012, K:9e8,  Gbase:0.34, sigma:5 },
+  'nmeningitidis_csf'   : { T:25,  lambda:0.6, k:0.010, K:8.5e8,Gbase:0.38, sigma:5 },
+  'paeruginosa_blood'   : { T:25,  lambda:0.5, k:0.012, K:9e8,  Gbase:0.36, sigma:5 },
+  'saureus_blood'       : { T:25,  lambda:0.5, k:0.011, K:9e8,  Gbase:0.34, sigma:5 },
+  'spneumoniae_csf'     : { T:25,  lambda:0.6, k:0.010, K:8.5e8,Gbase:0.38, sigma:5 },
+};
+
+function applyPreset(){
+  const p = PRESETS[document.getElementById('profile').value];
+  if(!p) return;
+  document.getElementById('temp').value  = p.T;
+  document.getElementById('lag').value   = p.lambda;
+  document.getElementById('k').value     = p.k;
+  document.getElementById('Kcap').value  = p.K;
+  document.getElementById('gbase').value = p.Gbase;
+  document.getElementById('sigma').value = p.sigma;
+}
+
+function resetAll(){
+  document.getElementById('Nt').value    = 100000000;
+  document.getElementById('delay').value = 6;
+  applyPreset();
+  document.getElementById('N0out').textContent = '—';
+  document.getElementById('dtout').textContent = '—';
+  document.getElementById('rout').textContent  = '—';
+}
+
+function safeExp(x){ // numerical safeguard to avoid overflow — clamp exponent
+  const LIMIT = 40; // e^40 ≈ 2.35e17
+  if(x >  LIMIT) x =  LIMIT;
+  if(x < -LIMIT) x = -LIMIT;
+  return Math.exp(x);
+}
+
+function computeN0(){
+  const Nt     = +document.getElementById('Nt').value;
+  const t      = +document.getElementById('delay').value;
+  const T      = +document.getElementById('temp').value;
+  const lambda = +document.getElementById('lag').value;
+  const k      = +document.getElementById('k').value;
+  const K      = +document.getElementById('Kcap').value;
+  const Gbase  = +document.getElementById('gbase').value;
+  const sigma  = +document.getElementById('sigma').value;
+
+  // Effective time after lag
+  const dt = Math.max(0, t - lambda);
+
+  // Corrected Gaussian on growth rate r(T), peaking at 37°C
+  const rbase    = Math.log(2) / Gbase;
+  const gaussian = Math.exp( -Math.pow(T - 37, 2) / (2 * Math.pow(sigma, 2)) );
+  const r        = rbase * gaussian;
+
+  // Special cases for clarity and stability
+  if(dt === 0){ renderOutputs(Nt, dt, r); return; }
+
+  const expkdt = safeExp(k * dt);
+  const exprdt = safeExp(r * dt);
+
+  const numerator   = K * Nt * expkdt;
+  const denominator = Nt * expkdt + (K - Nt * expkdt) * exprdt;
+
+  let N0 = numerator / denominator;
+
+  if(!Number.isFinite(N0) || isNaN(N0)){
+    document.getElementById('N0out').innerHTML = '<span class="danger">Computation error — check inputs</span>';
+    document.getElementById('dtout').textContent = dt.toFixed(2);
+    document.getElementById('rout').textContent  = r.toFixed(4);
+    return;
+  }
+  renderOutputs(N0, dt, r);
+}
+
+function renderOutputs(N0, dt, r){
+  const fDec = new Intl.NumberFormat('en-US', {maximumFractionDigits:2});
+  let displayN0;
+  if     (N0 < 0)    displayN0 = '<0 (unphysical)';
+  else if(N0 < 100)  displayN0 = fDec.format(N0);
+  else if(N0 < 1e8)  displayN0 = formatScientific(N0);
+  else               displayN0 = Math.round(N0).toLocaleString();
+
+  document.getElementById('N0out').textContent = displayN0;
+  document.getElementById('dtout').textContent = dt.toFixed(2);
+  document.getElementById('rout').textContent  = r.toFixed(4);
+}
+
+function copyResult(){
+  const txt = document.getElementById('N0out').textContent.trim();
+  if(!txt || txt === '—') return;
+  navigator.clipboard.writeText(txt).then(() => alert('N₀ copied to clipboard: ' + txt));
+}
+
+// Initialize defaults on first load
+applyPreset();
+</script>
+</body>
+</html>
