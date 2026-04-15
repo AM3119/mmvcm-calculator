@@ -46,7 +46,7 @@ where:
 
 If you use this calculator, please cite the original publication:
 
-> Al Mahrizi & Mossolem. *[Article title]*. *Microbial Pathogenesis*, 2026. DOI: [10.1016/j.micpath.2026.107738](https://linkinghub.elsevier.com/retrieve/pii/S0167701226000680)
+> Al Mahrizi AD, Mossolem F, Blundell R. Estimating original bacterial loads from delayed clinical samples: A methodological Modeling and empirical validation study. *Journal of Microbiological Methods*. 2026;244:107456. doi:[10.1016/j.mimet.2026.107456](https://doi.org/10.1016/j.mimet.2026.107456)
 
 ## Disclaimer
 
