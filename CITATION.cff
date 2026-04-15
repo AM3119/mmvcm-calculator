@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use this calculator, please cite the following publication."
+type: software
+title: "MM-VCM Calculator: Al Mahrizi–Mossolem Viability Correction Model"
+version: "1.0.0"
+date-released: "2026-04-15"
+url: "https://AM3119.github.io/mmvcm-calculator/"
+repository-code: "https://github.com/AM3119/mmvcm-calculator"
+license: MIT
+abstract: >-
+  Interactive browser-based calculator implementing the MM-VCM closed-form
+  back-calculation model. Estimates the initial microbial load N₀ (CFU/mL)
+  at the time of clinical sample collection from a delayed culture measurement
+  Nₜ, correcting for temperature-dependent growth, lag phase, decay, and
+  carrying capacity. Supports eight organism–matrix profiles.
+authors:
+  - family-names: Al Mahrizi
+    given-names: Ahmed Dawood
+    orcid: ""
+  - family-names: Mossolem
+    given-names: Fatima
+    orcid: ""
+  - family-names: Blundell
+    given-names: Renald
+    orcid: ""
+preferred-citation:
+  type: article
+  title: >-
+    Estimating original bacterial loads from delayed clinical samples:
+    A methodological Modeling and empirical validation study
+  authors:
+    - family-names: Al Mahrizi
+      given-names: Ahmed Dawood
+    - family-names: Mossolem
+      given-names: Fatima
+    - family-names: Blundell
+      given-names: Renald
+  journal: "Journal of Microbiological Methods"
+  volume: 244
+  year: 2026
+  article-number: "107456"
+  doi: "10.1016/j.mimet.2026.107456"
+  url: "https://doi.org/10.1016/j.mimet.2026.107456"
