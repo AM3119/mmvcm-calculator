@@ -16,13 +16,13 @@ abstract: >-
 authors:
   - family-names: Al Mahrizi
     given-names: Ahmed Dawood
-    orcid: ""
+    orcid: "https://orcid.org/0009-0006-0722-827X"
   - family-names: Mossolem
     given-names: Fatima
-    orcid: ""
+    orcid: "https://orcid.org/0009-0008-1513-6409"
   - family-names: Blundell
     given-names: Renald
-    orcid: ""
+    orcid: "https://orcid.org/0000-0002-1483-0991"
 preferred-citation:
   type: article
   title: >-
@@ -31,10 +31,13 @@ preferred-citation:
   authors:
     - family-names: Al Mahrizi
       given-names: Ahmed Dawood
+      orcid: "https://orcid.org/0009-0006-0722-827X"
     - family-names: Mossolem
       given-names: Fatima
+      orcid: "https://orcid.org/0009-0008-1513-6409"
     - family-names: Blundell
       given-names: Renald
+      orcid: "https://orcid.org/0000-0002-1483-0991"
   journal: "Journal of Microbiological Methods"
   volume: 244
   year: 2026
