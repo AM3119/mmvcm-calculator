@@ -3,60 +3,113 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MM-VCM Viability Correction Calculator</title>
+<title>MM-VCM Calculator — Al Mahrizi–Mossolem Viability Correction Model</title>
+
+<!-- SEO & citation meta -->
+<meta name="description" content="Interactive calculator implementing the MM-VCM closed-form model for delay-corrected microbial load estimation. Back-calculates N₀ (CFU/mL) from a delayed culture result, correcting for temperature, lag phase, decay, and carrying capacity.">
+<meta name="author" content="Ahmed Dawood Al Mahrizi, Fatima Mossolem, Renald Blundell">
+<meta name="keywords" content="microbiology, CFU, viability correction, bacterial load, clinical microbiology, delay correction, MM-VCM, calculator">
+<meta name="citation_title" content="Estimating original bacterial loads from delayed clinical samples: A methodological Modeling and empirical validation study">
+<meta name="citation_author" content="Al Mahrizi, Ahmed Dawood">
+<meta name="citation_author" content="Mossolem, Fatima">
+<meta name="citation_author" content="Blundell, Renald">
+<meta name="citation_journal_title" content="Journal of Microbiological Methods">
+<meta name="citation_volume" content="244">
+<meta name="citation_article_number" content="107456">
+<meta name="citation_year" content="2026">
+<meta name="citation_doi" content="10.1016/j.mimet.2026.107456">
+<meta name="citation_fulltext_html_url" content="https://doi.org/10.1016/j.mimet.2026.107456">
+
+<!-- Open Graph -->
+<meta property="og:title" content="MM-VCM Calculator — Viability Correction Model">
+<meta property="og:description" content="Back-calculate initial microbial load N₀ from a delayed CFU measurement. Supports 8 organism–matrix profiles.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://AM3119.github.io/mmvcm-calculator/">
+
 <style>
   :root{
-    --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --accent:#22c55e; --accent2:#38bdf8; --danger:#ef4444; --card:#0b1220;
+    --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --accent:#22c55e; --accent2:#38bdf8;
+    --danger:#ef4444; --card:#0b1220; --warn:#fde68a;
   }
   html,body{height:100%;}
   body{
     margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    color:#e5e7eb; background:linear-gradient(180deg,#0b1020, #0a1328 40%, #0b1020);
+    color:#e5e7eb; background:linear-gradient(180deg,#0b1020,#0a1328 40%,#0b1020);
   }
   .wrap{max-width:1100px;margin:32px auto;padding:0 16px;}
   header{margin-bottom:18px;}
-  h1{font-size:28px;margin:0 0 6px 0;}
-  .subtitle{color:var(--muted);font-size:14px}
+  h1{font-size:28px;margin:0 0 4px 0;}
+  .subtitle{color:var(--muted);font-size:14px;margin-bottom:8px;}
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11px;padding:3px 9px;border-radius:20px;
+    text-decoration:none;border:1px solid rgba(148,163,184,0.25);
+  }
+  .badge-green{background:rgba(34,197,94,0.12);color:#86efac;border-color:rgba(34,197,94,0.3);}
+  .badge-blue{background:rgba(56,189,248,0.12);color:#7dd3fc;border-color:rgba(56,189,248,0.3);}
+  .badge-purple{background:rgba(167,139,250,0.12);color:#c4b5fd;border-color:rgba(167,139,250,0.3);}
+  .badge-gray{background:rgba(148,163,184,0.1);color:#94a3b8;border-color:rgba(148,163,184,0.2);}
   .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
   .card{
-    background:rgba(255,255,255,0.04); border:1px solid rgba(148,163,184,0.2);
-    border-radius:12px; padding:18px; backdrop-filter: blur(6px);
+    background:rgba(255,255,255,0.04);border:1px solid rgba(148,163,184,0.2);
+    border-radius:12px;padding:18px;backdrop-filter:blur(6px);
   }
   .card h2{font-size:18px;margin:0 0 10px 0;}
-  .row{display:flex; gap:12px; align-items:center; margin:10px 0;}
-  label{min-width:190px; font-size:14px;}
-  input[type=number], select{
-    width:100%; padding:10px 12px; color:#e5e7eb; background:#0a1020; border-radius:10px;
-    border:1px solid rgba(148,163,184,0.25); outline:none;
+  .row{display:flex;gap:12px;align-items:center;margin:10px 0;}
+  label{min-width:190px;font-size:14px;}
+  input[type=number],select{
+    width:100%;padding:10px 12px;color:#e5e7eb;background:#0a1020;border-radius:10px;
+    border:1px solid rgba(148,163,184,0.25);outline:none;
   }
-  input[type=number]:focus, select:focus{border-color:var(--accent2); box-shadow:0 0 0 3px rgba(56,189,248,0.15)}
+  input[type=number]:focus,select:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(56,189,248,0.15)}
   .btn{
-    padding:10px 14px; border-radius:10px; border:1px solid rgba(148,163,184,0.25);
-    cursor:pointer; color:#0a1020; background:linear-gradient(180deg,#34d399,#10b981);
+    padding:10px 14px;border-radius:10px;border:1px solid rgba(148,163,184,0.25);
+    cursor:pointer;color:#0a1020;background:linear-gradient(180deg,#34d399,#10b981);
   }
-  .btn.secondary{background:linear-gradient(180deg,#60a5fa,#38bdf8); color:#0b1020}
+  .btn.secondary{background:linear-gradient(180deg,#60a5fa,#38bdf8);color:#0b1020}
   .btn.ghost{background:transparent;color:#e5e7eb}
-  .note{font-size:13px;color:var(--muted); line-height:1.45}
-  .output{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px
-  }
-  .pill{
-    background:#0a1220;border:1px solid rgba(148,163,184,0.2);padding:14px;border-radius:12px
-  }
+  .note{font-size:13px;color:var(--muted);line-height:1.5}
+  .output{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+  .pill{background:#0a1220;border:1px solid rgba(148,163,184,0.2);padding:14px;border-radius:12px}
   .pill .k{display:block;color:var(--muted);font-size:12px}
   .pill .v{font-size:18px;margin-top:6px}
   .formula{
     font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-    background:#0a1220;border:1px dashed rgba(56,189,248,0.35); padding:14px; border-radius:12px; overflow:auto
+    background:#0a1220;border:1px dashed rgba(56,189,248,0.35);padding:14px;border-radius:12px;overflow:auto
   }
   details{margin-top:10px}
-  table{width:100%; border-collapse:collapse; font-size:13px}
-  th,td{padding:10px;border-bottom:1px solid rgba(148,163,184,0.15); text-align:left}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px;border-bottom:1px solid rgba(148,163,184,0.15);text-align:left}
   th{color:#93c5fd}
-  .warn{color:#fde68a}
+  .warn{color:var(--warn)}
   .danger{color:var(--danger)}
   .ok{color:var(--accent)}
-  footer{margin-top:24px;color:var(--muted);font-size:12px}
+  .cite-box{
+    background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.25);
+    border-radius:10px;padding:14px 16px;margin-top:16px;
+  }
+  .cite-box h3{font-size:13px;color:var(--accent2);margin:0 0 8px 0;letter-spacing:0.05em;text-transform:uppercase;}
+  .cite-text{font-size:12px;color:#cbd5e1;line-height:1.6;font-family:ui-monospace,monospace;}
+  .cite-text a{color:var(--accent2);}
+  .warn-box{
+    background:rgba(253,230,138,0.06);border:1px solid rgba(253,230,138,0.2);
+    border-radius:10px;padding:12px 14px;margin-top:10px;
+  }
+  .warn-box h3{font-size:12px;color:var(--warn);margin:0 0 6px 0;letter-spacing:0.05em;text-transform:uppercase;}
+  .footer-inner{
+    display:grid;grid-template-columns:1fr 1fr;gap:24px;
+    margin-top:24px;padding-top:20px;border-top:1px solid rgba(148,163,184,0.1);
+  }
+  .footer-section h4{font-size:12px;color:var(--accent2);letter-spacing:0.06em;text-transform:uppercase;margin:0 0 8px 0;}
+  .footer-section p,.footer-section a{font-size:12px;color:var(--muted);line-height:1.6;}
+  .footer-section a{color:#7dd3fc;}
+  .footer-bottom{margin-top:16px;font-size:11px;color:rgba(148,163,184,0.5);text-align:center;}
+  @media(max-width:700px){
+    .grid{grid-template-columns:1fr;}
+    .footer-inner{grid-template-columns:1fr;}
+    .output{grid-template-columns:1fr 1fr;}
+  }
 </style>
 <!-- MathJax for equation rendering -->
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
@@ -67,9 +120,22 @@
   <header>
     <h1>Al Mahrizi–Mossolem Viability Correction Model (MM‑VCM) Calculator</h1>
     <div class="subtitle">Estimate the initial microbial load N₀ from a delayed observation N<sub>t</sub>, accounting for temperature, lag, decay, and carrying capacity.</div>
+    <div class="badge-row">
+      <a class="badge badge-green" href="https://doi.org/10.1016/j.mimet.2026.107456" target="_blank" rel="noopener">
+        📝 J. Microbiol. Methods 2026;244:107456
+      </a>
+      <a class="badge badge-blue" href="https://doi.org/10.1016/j.mimet.2026.107456" target="_blank" rel="noopener">
+        DOI: 10.1016/j.mimet.2026.107456
+      </a>
+      <a class="badge badge-purple" href="https://github.com/AM3119/mmvcm-calculator" target="_blank" rel="noopener">
+        ♥ GitHub
+      </a>
+      <span class="badge badge-gray">v1.0.0</span>
+    </div>
   </header>
 
   <div class="grid">
+    <!-- LEFT: Input panel -->
     <section class="card">
       <h2>1) Select organism and matrix</h2>
       <div class="row">
@@ -147,81 +213,141 @@
         </div>
       </div>
 
-      <p class="note" style="margin-top:8px">
-        Caution: for long delays (≥ 12 h) or uncertain temperatures, interpret N₀ as an interval estimate in practice; uncertainty is driven predominantly by temperature in sensitivity analyses.
-      </p>
+      <div class="warn-box">
+        <h3>⚠️ Interpretation guidance</h3>
+        <p class="note">
+          For delays ≥ 12 h or uncertain storage temperatures, interpret N₀ as an interval estimate.
+          Temperature is the dominant uncertainty driver (sensitivity analyses, published study).
+          A ±2°C error in T has greater impact than uncertainty in k or λ.
+        </p>
+      </div>
     </section>
 
+    <!-- RIGHT: Info panel -->
     <section class="card">
       <h2>About the equation</h2>
       <div class="formula">
         MM‑VCM inverse equation (closed‑form back‑calculation):<br><br>
         \[ N_0 = \frac{K \cdot N_t \cdot e^{k \cdot dt}}{N_t \cdot e^{k \cdot dt} + (K - N_t \cdot e^{k \cdot dt}) \cdot e^{r(T) \cdot dt}} \]<br><br>
-        with \[ dt = \max(0, t - \lambda) \], \[ r(T) = \frac{\ln(2)}{G_{\text{base}}} \cdot \exp\left( -\frac{(T-37)^2}{2\sigma^2} \right) \].
+        with \[ dt = \max(0,\, t - \lambda) \],&nbsp;&nbsp;
+        \[ r(T) = \frac{\ln 2}{G_{\text{base}}} \cdot \exp\!\left(-\frac{(T-37)^2}{2\sigma^2}\right) \]
       </div>
 
       <details open>
         <summary><strong>Variable reference</strong></summary>
         <table>
-          <tr><th>Symbol</th><th>Name</th><th>Meaning / Units</th></tr>
-          <tr><td>N<sub>t</sub></td><td>Observed load</td><td>Measured CFU/mL at delay time t</td></tr>
-          <tr><td>N₀</td><td>Initial load</td><td>Estimated CFU/mL at collection time</td></tr>
-          <tr><td>t</td><td>Delay</td><td>Hours between collection and measurement</td></tr>
-          <tr><td>λ</td><td>Lag phase</td><td>No-net-growth period before proliferation (hours)</td></tr>
-          <tr><td>dt</td><td>Effective time</td><td>dt = max(0, t − λ) (hours)</td></tr>
-          <tr><td>k</td><td>Decay rate</td><td>Per-hour loss due to death, storage</td></tr>
-          <tr><td>K</td><td>Carrying capacity</td><td>Matrix-specific max CFU/mL</td></tr>
-          <tr><td>T</td><td>Temperature</td><td>Storage/transport temperature (°C)</td></tr>
-          <tr><td>r(T)</td><td>Growth rate</td><td>Gaussian around 37°C (h⁻¹)</td></tr>
+          <tr><th>Symbol</th><th>Name</th><th>Units</th></tr>
+          <tr><td>N<sub>t</sub></td><td>Observed load at time t</td><td>CFU/mL</td></tr>
+          <tr><td>N₀</td><td>Estimated initial load</td><td>CFU/mL</td></tr>
+          <tr><td>t</td><td>Delay</td><td>hours</td></tr>
+          <tr><td>λ</td><td>Lag phase</td><td>hours</td></tr>
+          <tr><td>dt</td><td>Effective growth time</td><td>hours</td></tr>
+          <tr><td>k</td><td>Decay rate</td><td>h⁻¹</td></tr>
+          <tr><td>K</td><td>Carrying capacity</td><td>CFU/mL</td></tr>
+          <tr><td>T</td><td>Storage temperature</td><td>°C</td></tr>
+          <tr><td>G<sub>base</sub></td><td>Base doubling time at 37°C</td><td>hours</td></tr>
+          <tr><td>σ</td><td>Temperature sensitivity</td><td>°C</td></tr>
+          <tr><td>r(T)</td><td>Growth rate at temp T</td><td>h⁻¹</td></tr>
         </table>
       </details>
 
       <details>
+        <summary><strong>Assumptions &amp; limitations</strong></summary>
+        <ul class="note" style="margin-top:8px;padding-left:16px;">
+          <li>Assumes <strong>continuous logistic growth</strong> during effective period dt; intermittent temperature fluctuations are not captured.</li>
+          <li>Lag phase λ is <strong>fixed per profile</strong>; true lag varies with inoculum size and prior stress.</li>
+          <li><strong>No output clamping</strong> — values &lt;0 indicate an edge case (N<sub>t</sub> &gt; K after decay correction); interpret as N₀ ≈ 0.</li>
+          <li>Parameters validated for the <strong>eight listed organism–matrix pairs</strong>. Extrapolation requires local validation.</li>
+          <li>Not a substitute for clinical judgment or local laboratory validation.</li>
+        </ul>
+      </details>
+
+      <details>
         <summary><strong>Clinical notes &amp; safeguards</strong></summary>
-        <ul class="note">
-          <li>Set dt to zero when t ≤ λ; then N₀ = N<sub>t</sub>.</li>
-          <li>Defaults reflect organism–matrix literature ranges; manual override is supported for local validation.</li>
-          <li>No clamping applied—raw formula output shown (may be &lt;0 in edge cases).</li>
+        <ul class="note" style="margin-top:8px;padding-left:16px;">
+          <li>When t ≤ λ, dt = 0 and N₀ = N<sub>t</sub> (no correction applied).</li>
+          <li>Defaults reflect organism–matrix literature ranges validated in the published study.</li>
+          <li>Override any parameter with locally derived values for site-specific validation.</li>
+          <li>For clinical documentation, report N₀ alongside input parameters and delay time.</li>
         </ul>
       </details>
 
       <div class="card" style="margin-top:12px;background:#091126">
         <h2 style="margin:0 0 6px 0">Quick guidance</h2>
         <div class="note">
-          1) Choose the organism–matrix profile and apply defaults. 2) Enter N<sub>t</sub>, delay, and temperature. 3) Optionally override λ, k, K, G<sub>base</sub>, σ to match local data. 4) Click Compute to obtain N₀ and diagnostic terms dt and r(T). For extended delays or uncertain T, report intervals in clinical documentation.
+          1) Choose organism–matrix profile → Apply defaults.&nbsp;
+          2) Enter N<sub>t</sub>, delay t, and temperature T.&nbsp;
+          3) Override λ, k, K, G<sub>base</sub>, σ for local data if available.&nbsp;
+          4) Click <strong>Compute N₀</strong> to obtain N₀, dt, and r(T).
         </div>
+      </div>
+
+      <div class="cite-box">
+        <h3>How to cite</h3>
+        <p class="cite-text">
+          Al Mahrizi AD, Mossolem F, Blundell R. Estimating original bacterial loads
+          from delayed clinical samples: A methodological Modeling and empirical
+          validation study. <em>J Microbiol Methods.</em> 2026;244:107456.<br>
+          doi: <a href="https://doi.org/10.1016/j.mimet.2026.107456" target="_blank" rel="noopener">10.1016/j.mimet.2026.107456</a>
+        </p>
       </div>
     </section>
   </div>
 
-  <footer>
-    MM‑VCM is intended to assist with delay-corrected interpretation of CFU counts; use alongside clinical judgment and local laboratory validation.
-  </footer>
+  <!-- Footer -->
+  <div class="footer-inner">
+    <div class="footer-section">
+      <h4>Publication</h4>
+      <p>
+        Al Mahrizi AD, Mossolem F, Blundell R.<br>
+        <em>J Microbiol Methods.</em> 2026;244:107456.<br>
+        <a href="https://doi.org/10.1016/j.mimet.2026.107456" target="_blank" rel="noopener">doi:10.1016/j.mimet.2026.107456</a>
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Authors &amp; ORCIDs</h4>
+      <p>
+        <a href="https://orcid.org/0009-0006-0722-827X" target="_blank" rel="noopener">Ahmed Dawood Al Mahrizi</a><br>
+        <a href="https://orcid.org/0009-0008-1513-6409" target="_blank" rel="noopener">Fatima Mossolem</a><br>
+        <a href="https://orcid.org/0000-0002-1483-0991" target="_blank" rel="noopener">Renald Blundell</a>
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Source code</h4>
+      <p>
+        <a href="https://github.com/AM3119/mmvcm-calculator" target="_blank" rel="noopener">github.com/AM3119/mmvcm-calculator</a><br>
+        Licensed under MIT. Version 1.0.0.
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Disclaimer</h4>
+      <p>MM‑VCM is a research tool. Use alongside clinical judgment and local laboratory validation. Not a substitute for medical advice.</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2026 Al Mahrizi, Mossolem &amp; Blundell · MM-VCM Calculator v1.0.0 ·
+    <a href="https://doi.org/10.1016/j.mimet.2026.107456" target="_blank" rel="noopener" style="color:rgba(148,163,184,0.5)">J Microbiol Methods 2026;244:107456</a>
+  </div>
 </div>
 
 <script>
-// Format large numbers as scientific notation like 1.234x10^8
 function formatScientific(value){
   if(value === 0) return '0';
   if(value < 0) return '<0 (unphysical)';
   const exponent = Math.floor(Math.log10(Math.abs(value)));
   let mantissa = value / Math.pow(10, exponent);
-  return mantissa.toFixed(3) + 'x10^' + exponent;
+  return mantissa.toFixed(3) + '×10⁻' + exponent; // e.g. 1.234×10⁻8 using proper Unicode
 }
 
-/* ===== Preset library (sensible defaults per organism · matrix) =====
-   Values approximate the ranges used in your simulations.
-   Users can override any field at runtime.
-*/
 const PRESETS = {
-  'ecoli_urine'         : { T:25,  lambda:0.4, k:0.011, K:9e8,  Gbase:0.33, sigma:5 },
-  'ecoli_blood'         : { T:25,  lambda:0.4, k:0.011, K:9e8,  Gbase:0.33, sigma:5 },
-  'efaecalis_urine'     : { T:25,  lambda:0.5, k:0.011, K:9e8,  Gbase:0.35, sigma:5 },
-  'kpneumoniae_urine'   : { T:25,  lambda:0.5, k:0.012, K:9e8,  Gbase:0.34, sigma:5 },
-  'nmeningitidis_csf'   : { T:25,  lambda:0.6, k:0.010, K:8.5e8,Gbase:0.38, sigma:5 },
-  'paeruginosa_blood'   : { T:25,  lambda:0.5, k:0.012, K:9e8,  Gbase:0.36, sigma:5 },
-  'saureus_blood'       : { T:25,  lambda:0.5, k:0.011, K:9e8,  Gbase:0.34, sigma:5 },
-  'spneumoniae_csf'     : { T:25,  lambda:0.6, k:0.010, K:8.5e8,Gbase:0.38, sigma:5 },
+  'ecoli_urine'       : { T:25, lambda:0.4, k:0.011, K:9e8,   Gbase:0.33, sigma:5 },
+  'ecoli_blood'       : { T:25, lambda:0.4, k:0.011, K:9e8,   Gbase:0.33, sigma:5 },
+  'efaecalis_urine'   : { T:25, lambda:0.5, k:0.011, K:9e8,   Gbase:0.35, sigma:5 },
+  'kpneumoniae_urine' : { T:25, lambda:0.5, k:0.012, K:9e8,   Gbase:0.34, sigma:5 },
+  'nmeningitidis_csf' : { T:25, lambda:0.6, k:0.010, K:8.5e8, Gbase:0.38, sigma:5 },
+  'paeruginosa_blood' : { T:25, lambda:0.5, k:0.012, K:9e8,   Gbase:0.36, sigma:5 },
+  'saureus_blood'     : { T:25, lambda:0.5, k:0.011, K:9e8,   Gbase:0.34, sigma:5 },
+  'spneumoniae_csf'   : { T:25, lambda:0.6, k:0.010, K:8.5e8, Gbase:0.38, sigma:5 },
 };
 
 function applyPreset(){
@@ -244,8 +370,8 @@ function resetAll(){
   document.getElementById('rout').textContent  = '—';
 }
 
-function safeExp(x){ // numerical safeguard to avoid overflow — clamp exponent
-  const LIMIT = 40; // e^40 ≈ 2.35e17
+function safeExp(x){
+  const LIMIT = 40;
   if(x >  LIMIT) x =  LIMIT;
   if(x < -LIMIT) x = -LIMIT;
   return Math.exp(x);
@@ -261,23 +387,17 @@ function computeN0(){
   const Gbase  = +document.getElementById('gbase').value;
   const sigma  = +document.getElementById('sigma').value;
 
-  // Effective time after lag
   const dt = Math.max(0, t - lambda);
-
-  // Corrected Gaussian on growth rate r(T), peaking at 37°C
   const rbase    = Math.log(2) / Gbase;
-  const gaussian = Math.exp( -Math.pow(T - 37, 2) / (2 * Math.pow(sigma, 2)) );
+  const gaussian = Math.exp(-Math.pow(T - 37, 2) / (2 * Math.pow(sigma, 2)));
   const r        = rbase * gaussian;
 
-  // Special cases for clarity and stability
   if(dt === 0){ renderOutputs(Nt, dt, r); return; }
 
   const expkdt = safeExp(k * dt);
   const exprdt = safeExp(r * dt);
-
   const numerator   = K * Nt * expkdt;
   const denominator = Nt * expkdt + (K - Nt * expkdt) * exprdt;
-
   let N0 = numerator / denominator;
 
   if(!Number.isFinite(N0) || isNaN(N0)){
@@ -296,7 +416,6 @@ function renderOutputs(N0, dt, r){
   else if(N0 < 100)  displayN0 = fDec.format(N0);
   else if(N0 < 1e8)  displayN0 = formatScientific(N0);
   else               displayN0 = Math.round(N0).toLocaleString();
-
   document.getElementById('N0out').textContent = displayN0;
   document.getElementById('dtout').textContent = dt.toFixed(2);
   document.getElementById('rout').textContent  = r.toFixed(4);
@@ -308,7 +427,6 @@ function copyResult(){
   navigator.clipboard.writeText(txt).then(() => alert('N₀ copied to clipboard: ' + txt));
 }
 
-// Initialize defaults on first load
 applyPreset();
 </script>
 </body>
