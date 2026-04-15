@@ -2,10 +2,11 @@
 
 [![Live Calculator](https://img.shields.io/badge/Calculator-Live-brightgreen?style=flat-square&logo=github)](https://AM3119.github.io/mmvcm-calculator/)
 [![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.mimet.2026.107456-blue?style=flat-square)](https://doi.org/10.1016/j.mimet.2026.107456)
+[![Zenodo](https://img.shields.io/badge/Zenodo-10.5281%2Fzenodo.19600204-blue?style=flat-square)](https://doi.org/10.5281/zenodo.19600204)
 [![Journal](https://img.shields.io/badge/Journal-J.%20Microbiol.%20Methods-orange?style=flat-square)](https://www.sciencedirect.com/journal/journal-of-microbiological-methods)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-**Al Mahrizi–Mossolem Viability Correction Model (MM-VCM)** — Interactive browser-based calculator for delay-corrected microbial load estimation in clinical microbiology.
+**Al Mahrizi-Mossolem Viability Correction Model (MM-VCM)** - Interactive browser-based calculator for delay-corrected microbial load estimation in clinical microbiology.
 
 ---
 
@@ -13,15 +14,15 @@
 
 **➡️ [https://AM3119.github.io/mmvcm-calculator/](https://AM3119.github.io/mmvcm-calculator/)**
 
-No installation required. Runs entirely in the browser — open the link and use immediately.
+No installation required. Runs entirely in the browser - open the link and use immediately.
 
 ---
 
 ## Background & Rationale
 
-In clinical microbiology, quantitative culture results (CFU/mL) are routinely used to guide diagnosis and treatment decisions. However, a delay between sample **collection** and **measurement** — due to transport, batching, or laboratory workflow — means the counted load Nₜ reflects the bacterial population *at the time of measurement*, not at collection.
+In clinical microbiology, quantitative culture results (CFU/mL) are routinely used to guide diagnosis and treatment decisions. However, a delay between sample **collection** and **measurement** - due to transport, batching, or laboratory workflow - means the counted load Nt reflects the bacterial population *at the time of measurement*, not at collection.
 
-Depending on temperature, organism, and delay duration, the true initial load N₀ can differ from Nₜ by **one to several orders of magnitude**. The MM-VCM model provides a closed-form analytical solution to back-calculate N₀ from Nₜ, correcting for:
+Depending on temperature, organism, and delay duration, the true initial load N0 can differ from Nt by **one to several orders of magnitude**. The MM-VCM model provides a closed-form analytical solution to back-calculate N0 from Nt, correcting for:
 
 - **Growth during delay** (temperature-dependent, organism-specific)
 - **Lag phase** before net proliferation begins
@@ -42,7 +43,7 @@ $$N_0 = \frac{K \cdot N_t \cdot e^{k \cdot dt}}{N_t \cdot e^{k \cdot dt} + \left
 
 ### Effective Growth Time
 
-Growth does not begin immediately — a lag phase λ precedes proliferation:
+Growth does not begin immediately - a lag phase λ precedes proliferation:
 
 $$dt = \max(0,\; t - \lambda)$$
 
@@ -52,58 +53,48 @@ Growth rate follows a Gaussian model centred at optimal temperature (37 °C):
 
 $$r(T) = \frac{\ln 2}{G_{\text{base}}} \cdot \exp\!\left(-\frac{(T - 37)^2}{2\sigma^2}\right)$$
 
-### Parameter Reference
+---
+
+## Parameter Reference
 
 | Symbol | Name | Units | Typical range |
-|--------|------|-------|---------------|
-| Nₜ | Observed load at time t | CFU/mL | 10²–10⁹ |
-| N₀ | Estimated initial load | CFU/mL | Model output |
-| t | Delay | h | 0–24 |
-| λ | Lag phase | h | 0.3–0.7 |
-| k | Decay rate | h⁻¹ | 0.010–0.013 |
-| K | Carrying capacity | CFU/mL | 8.5×10⁸–9×10⁸ |
-| T | Storage temperature | °C | 4–37 |
-| G_base | Base doubling time at 37 °C | h | 0.33–0.38 |
+|--------|------|-------|----------------|
+| Nt | Observed load at time t | CFU/mL | 10²-10⁸ |
+| N0 | Estimated initial load | CFU/mL | Model output |
+| t | Delay | h | 0-24 |
+| λ | Lag phase | h | 0.3-0.7 |
+| k | Decay rate | h⁻¹ | 0.010-0.013 |
+| K | Carrying capacity | CFU/mL | 8.5×10⁸-9×10⁸ |
+| T | Storage temperature | °C | 4-37 |
+| G_base | Base doubling time at 37 °C | h | 0.33-0.38 |
 | σ | Temperature sensitivity | °C | 5 (default) |
 | dt | Effective growth time | h | Derived |
 | r(T) | Temperature-corrected growth rate | h⁻¹ | Derived |
 
 ---
 
-## Supported Organism–Matrix Profiles
+## Supported Organism-Matrix Profiles
 
-Default parameters are drawn from organism–matrix-specific literature ranges validated in the published study. Users may override any parameter with locally derived values.
+Default parameters are drawn from organism-matrix-specific literature ranges validated in the published study. Users may override any parameter with locally derived values.
 
 | Organism | Matrix | G_base (h) | λ (h) | k (h⁻¹) | K (CFU/mL) |
-|----------|--------|-----------|-------|---------|------------|
-| *E. coli* | Urine | 0.33 | 0.40 | 0.011 | 9 × 10⁸ |
-| *E. coli* | Blood | 0.33 | 0.40 | 0.011 | 9 × 10⁸ |
-| *E. faecalis* | Urine | 0.35 | 0.50 | 0.011 | 9 × 10⁸ |
-| *K. pneumoniae* | Urine | 0.34 | 0.50 | 0.012 | 9 × 10⁸ |
-| *N. meningitidis* | CSF | 0.38 | 0.60 | 0.010 | 8.5 × 10⁸ |
-| *P. aeruginosa* | Blood | 0.36 | 0.50 | 0.012 | 9 × 10⁸ |
-| *S. aureus* | Blood | 0.34 | 0.50 | 0.011 | 9 × 10⁸ |
-| *S. pneumoniae* | CSF | 0.38 | 0.60 | 0.010 | 8.5 × 10⁸ |
-
----
-
-## Usage
-
-1. **Select** the organism–matrix profile and click **Apply defaults**
-2. **Enter** the observed count Nₜ (CFU/mL), delay t (hours), and storage temperature T (°C)
-3. **Override** λ, k, K, G_base, or σ if local validation data are available
-4. **Click Compute N₀** — results include N₀, effective growth time dt, and growth rate r(T)
-5. For extended delays (≥ 12 h) or uncertain temperatures, **report N₀ as an interval estimate** in clinical documentation
+|----------|--------|------------|--------|----------|------------|
+| *E. coli* | Urine | 0.33 | 0.5 | 0.010 | 9×10⁸ |
+| *K. pneumoniae* | Urine | 0.35 | 0.4 | 0.011 | 8.5×10⁸ |
+| *S. aureus* | Blood | 0.37 | 0.6 | 0.012 | 9×10⁸ |
+| *S. epidermidis* | Blood | 0.38 | 0.7 | 0.013 | 8.5×10⁸ |
+| *S. pneumoniae* | CSF | 0.36 | 0.5 | 0.011 | 9×10⁸ |
+| *E. coli* | CSF | 0.34 | 0.5 | 0.010 | 9×10⁸ |
 
 ---
 
 ## Limitations & Assumptions
 
-- The model assumes **continuous exponential/logistic growth** during the effective period dt; intermittent temperature fluctuations are not captured.
-- **Lag phase λ is treated as fixed** per organism–matrix profile; true lag may vary with inoculum size and prior stress.
-- **No clamping** is applied to model output — values < 0 indicate an edge case (e.g., Nₜ > K after decay correction) and should be interpreted as N₀ ≈ 0.
-- Sensitivity analyses in the published study indicate **temperature is the dominant uncertainty driver**; a ±2 °C error in T has greater impact than uncertainty in k or λ.
-- Model parameters were validated for the eight organism–matrix pairs listed above. **Extrapolation to other organisms or matrices requires local validation.**
+- **Simplified lag phase**: The model assumes a fixed lag phase λ. In practice, lag duration varies with inoculum size, prior stress, and growth history.
+- **Temperature homogeneity**: A single representative temperature T is assumed for the entire delay period. Fluctuating temperatures (e.g., during transport) are not modelled.
+- **No output clamping**: The calculator will return mathematically valid results even for biologically implausible inputs. Users should apply clinical judgment.
+- **Extrapolation risk**: Parameters are validated for delays up to 24 h. Extrapolation beyond this range is not recommended without independent validation.
+- **Research use only**: This tool is intended to support research and hypothesis generation. It is not a validated clinical diagnostic device.
 
 ---
 
@@ -111,22 +102,33 @@ Default parameters are drawn from organism–matrix-specific literature ranges v
 
 | File | Description |
 |------|-------------|
-| `index.html` | Self-contained calculator (HTML/CSS/JS, no dependencies to install) |
-| `CITATION.cff` | Machine-readable citation file (used by GitHub's Cite This Repository feature) |
-| `README.md` | This documentation |
+| `index.html` | Self-contained browser calculator (no dependencies) |
+| `README.md` | Full documentation |
+| `CITATION.cff` | Machine-readable citation file (APA, BibTeX export via GitHub) |
+| `LICENSE` | MIT License |
 
 ---
 
 ## Citation
 
-If you use this calculator in your work, please cite the original publication:
+If you use this calculator in your research, please cite both the journal article and the software:
 
+**Journal Article:**
 > Al Mahrizi AD, Mossolem F, Blundell R. Estimating original bacterial loads from delayed clinical samples: A methodological Modeling and empirical validation study. *Journal of Microbiological Methods*. 2026;244:107456. doi:[10.1016/j.mimet.2026.107456](https://doi.org/10.1016/j.mimet.2026.107456)
 
-You can also use the **"Cite this repository"** button on the right-hand sidebar of this GitHub page (powered by `CITATION.cff`).
+**Software (this calculator):**
+> Al Mahrizi, A. D., Mossolem, F., & Blundell, R. (2026). MM-VCM Calculator: Al Mahrizi-Mossolem Viability Correction Model (v1.0.0). Zenodo. doi:[10.5281/zenodo.19600204](https://doi.org/10.5281/zenodo.19600204)
+
+---
+
+## Authors
+
+- **Ahmed Dawood Al Mahrizi** — [ORCID: 0009-0006-0722-827X](https://orcid.org/0009-0006-0722-827X)
+- **Fatima Mossolem** — [ORCID: 0009-0008-1513-6409](https://orcid.org/0009-0008-1513-6409)
+- **Renald Blundell** — [ORCID: 0000-0002-1483-0991](https://orcid.org/0000-0002-1483-0991)
 
 ---
 
 ## Disclaimer
 
-MM-VCM is a research tool intended to assist with delay-corrected interpretation of quantitative culture results. It does not constitute medical advice and must be used alongside clinical judgment and local laboratory validation. The authors accept no liability for clinical decisions made on the basis of this tool alone.
+This tool is provided for **research purposes only**. It is not intended for direct clinical decision-making and has not been validated as a medical device. Always apply professional clinical judgment. The authors and affiliated institutions accept no liability for clinical decisions made on the basis of this calculator's outputs.
